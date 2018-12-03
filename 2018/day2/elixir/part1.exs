@@ -4,8 +4,21 @@ defmodule ChecksumCalculator do
   def get_checksum(ids) do
     ids
     |> Enum.map(&String.split(&1, "", trim: true))
-    |> Enum.map(
-      &Enum.reduce(&1, %{}, fn l, accum ->
+    |> character_counts
+    |> two_three_counts
+    |> Map.values()
+    |> Enum.reduce(1, fn current, accum -> current * accum end)
+  end
+
+  # Takes an input , e.g.
+  # [["a", "b", "c", "d", "e", "f"],
+  # ["b", "a", "b", "a", "b", "c"]]
+  # Returns the character count for those words
+  # [%{"a" => 1, "b" => 1, "c" => 1, "d" => 1, "e" => 1, "f" => 1},
+  # %{"a" => 2, "b" => 3, "c" => 1}]
+  defp character_counts(ids) do
+    Enum.map(ids, fn current ->
+      Enum.reduce(current, %{}, fn l, accum ->
         {_, accum} =
           Map.get_and_update(accum, l, fn current_value ->
             {l, (current_value || 0) + 1}
@@ -13,8 +26,16 @@ defmodule ChecksumCalculator do
 
         accum
       end)
-    )
-    |> Enum.reduce(Map.new(), fn current, accum ->
+    end)
+  end
+
+  # Takes an input , e.g.
+  # [%{"a" => 1, "b" => 1, "c" => 1, "d" => 1, "e" => 1, "f" => 1},
+  # %{"a" => 2, "b" => 3, "c" => 1}]
+  # Returns the count of words that contain two or three of the same characters
+  # %{"two" => 1, "three" => 1},
+  defp two_three_counts(counts) do
+    Enum.reduce(counts, Map.new(), fn current, accum ->
       counts =
         Map.values(current)
         |> Enum.uniq()
@@ -38,22 +59,17 @@ defmodule ChecksumCalculator do
           accum
         end
 
-      accum =
-        if MapSet.member?(counts, 3) do
-          {_, accum} =
-            Map.get_and_update(accum, "three", fn current_value ->
-              {accum, (current_value || 0) + 1}
-            end)
+      if MapSet.member?(counts, 3) do
+        {_, accum} =
+          Map.get_and_update(accum, "three", fn current_value ->
+            {accum, (current_value || 0) + 1}
+          end)
 
-          accum
-        else
-          accum
-        end
-
-      IO.inspect(accum)
+        accum
+      else
+        accum
+      end
     end)
-    |> Map.values()
-    |> Enum.reduce(1, fn current, accum -> current * accum end)
   end
 end
 
