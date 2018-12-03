@@ -37,3 +37,17 @@ end
 # example2 = [-6, +3, +8, +5, -6]
 # example3 = [+7, +7, -2, -7, -4]
 IO.puts FrequencyFinder.get_dupe_freq(input)
+
+ExUnit.start();
+
+defmodule FrequencyFinderTest do
+  use ExUnit.Case
+
+  import FrequencyFinder;
+  
+  test "range" do
+    assert get_dupe_freq([+3, +3, +4, -2, -4]) == 10
+    assert get_dupe_freq([-6, +3, +8, +5, -6]) == 5
+    assert get_dupe_freq([+7, +7, -2, -7, -4]) == 14
+  end
+end
