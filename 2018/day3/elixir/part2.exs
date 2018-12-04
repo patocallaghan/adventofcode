@@ -19,7 +19,7 @@ defmodule ProperClaim do
     end)
   end
 
-  def set_markers(instructions, map) do
+  defp set_markers(instructions, map) do
     [_id, x, y, width, height] = instructions
 
     Enum.reduce(x..(x + (width - 1)), map, fn x_coord, accumx ->
@@ -29,7 +29,7 @@ defmodule ProperClaim do
     end)
   end
 
-  def process_raw_instructions(instructions) do
+  defp process_raw_instructions(instructions) do
     instructions
     |> Enum.map(&String.replace(&1, ~r{:|#| @}, ""))
     |> Enum.map(&String.split(&1, " "))
@@ -45,7 +45,7 @@ defmodule ProperClaim do
     )
   end
 
-  def check_claim(map, instructions) do
+  defp check_claim(map, instructions) do
     [_id, x, y, width, height] = instructions
 
     Enum.reduce(x..(x + (width - 1)), false, fn x_coord, accumx ->
@@ -80,21 +80,6 @@ case System.argv() do
                  "#2 @ 3,1: 4x4",
                  "#3 @ 5,5: 2x2"
                ]) == 3
-      end
-
-      test "instructions" do
-        instructions =
-          process_raw_instructions([
-            "#1 @ 1,3: 4x4",
-            "#2 @ 3,1: 4x4",
-            "#3 @ 5,5: 2x2"
-          ])
-
-        assert instructions == [
-                 [1, 1, 3, 4, 4],
-                 [2, 3, 1, 4, 4],
-                 [3, 5, 5, 2, 2]
-               ]
       end
     end
 
