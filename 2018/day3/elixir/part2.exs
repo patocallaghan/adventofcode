@@ -11,12 +11,10 @@ defmodule ProperClaim do
       |> Enum.reduce(Map.new(), &set_markers/2)
 
     instructions
-    |> Enum.reject(fn current ->
+    |> Enum.find(fn current ->
       check_claim(map, current)
     end)
-    |> Enum.reduce(nil, fn current, _accum ->
-      Enum.at(current, 0)
-    end)
+    |> Enum.at(0)
   end
 
   defp set_markers(instructions, map) do
@@ -48,17 +46,17 @@ defmodule ProperClaim do
   defp check_claim(map, instructions) do
     [_id, x, y, width, height] = instructions
 
-    Enum.reduce(x..(x + (width - 1)), false, fn x_coord, accumx ->
+    Enum.reduce(x..(x + (width - 1)), true, fn x_coord, accumx ->
       Enum.reduce(y..(y + (height - 1)), accumx, fn y_coord, accumy ->
         cond do
-          accumy == true ->
-            true
+          accumy == false ->
+            false
 
           Map.get(map, {x_coord, y_coord}) != 1 ->
-            true
+            false
 
           true ->
-            false
+            true
         end
       end)
     end)
