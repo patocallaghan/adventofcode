@@ -1,44 +1,35 @@
 # https://adventofcode.com/2018/day/4
 
 defmodule SleepingGuard do
-  def answer(entries) do
-    data =
-      entries
-      |> parse_entries()
-      |> update_guard_entries()
+  def answer(instructions) do
+    parsed_instructions =
+      instructions
+      |> parse_instructions()
+      |> process_guard_instructions()
 
-    max =
-      data
-      |> Enum.max_by(fn {_id, sleep_chart} ->
-        Enum.sum(Map.values(sleep_chart))
+    {guard_id, sleep_data} =
+      parsed_instructions
+      |> Enum.max_by(fn {_id, sleep_times} ->
+        Enum.sum(Map.values(sleep_times))
       end)
 
-    {id, _sum, minute} =
-      [max]
-      |> Enum.reduce({}, fn {id, map}, acc ->
-        {minute, _} = Enum.max_by(Map.to_list(map), fn {_, count} -> count end)
-        {id, Enum.sum(Map.values(map)), minute}
-      end)
+    {minute, _} =
+      sleep_data
+      |> Map.to_list()
+      |> Enum.max_by(fn {_, count} -> count end)
 
-    minute * id
+    minute * guard_id
   end
 
-  def parse_entries(entries) do
-    entries
+  def parse_instructions(instructions) do
+    instructions
     |> Enum.sort()
-    |> Enum.map(&parse_entry/1)
+    |> Enum.map(&parse_instruction/1)
   end
 
-  def find_max_and_minute(entry) do
-    [entry]
-  end
-
-  # "[1518-11-01 00:00] Guard #10 begins shift",
-  # "[1518-11-01 00:05] falls asleep",
-  # "[1518-11-01 00:25] wakes up",
-  defp parse_entry(entry) do
+  defp parse_instruction(instruction) do
     timestamp =
-      String.split(entry, "]")
+      String.split(instruction, "]")
       |> Enum.at(0)
       |> String.replace("[", "")
       |> String.replace(" ", "T")
@@ -46,10 +37,10 @@ defmodule SleepingGuard do
 
     action =
       cond do
-        String.contains?(entry, "begins") ->
+        String.contains?(instruction, "begins") ->
           :begin
 
-        String.contains?(entry, "falls asleep") ->
+        String.contains?(instruction, "falls asleep") ->
           :sleep
 
         true ->
@@ -57,8 +48,8 @@ defmodule SleepingGuard do
       end
 
     guard =
-      if String.contains?(entry, "begins") do
-        results = Regex.named_captures(~r/#(?<id>\d+)/, entry)
+      if String.contains?(instruction, "begins") do
+        results = Regex.named_captures(~r/#(?<id>\d+)/, instruction)
 
         String.to_integer(Map.get(results, "id"))
       else
@@ -70,14 +61,14 @@ defmodule SleepingGuard do
 
   # entries [
   #  {"1518-07-05T23:53:00Z", :begin, 1949}
-  #  {"1518-07-06T00:10:00Z", :sleep, 1949 }
-  #  {"1518-07-06T00:15:00Z", :wake, 1949 }
+  #  {"1518-07-06T00:10:00Z", :sleep, nil }
+  #  {"1518-07-06T00:15:00Z", :wake, nil }
   # ]
-  def update_guard_entries(entries) do
+  def process_guard_instructions(instructions) do
     {_, _, guard_entries} =
-      Enum.reduce(entries, {nil, nil, Map.new()}, fn entry,
-                                                     {current_timestamp, current_guard, map} ->
-        {entry_timestamp, action, guard} = entry
+      Enum.reduce(instructions, {nil, nil, Map.new()}, fn instruction,
+                                                          {current_timestamp, current_guard, map} ->
+        {entry_timestamp, action, guard} = instruction
 
         case action do
           :begin ->
@@ -106,9 +97,8 @@ defmodule SleepingGuard do
     {_, current_date_time, _} = DateTime.from_iso8601(current_timestamp)
     {_, previous_date_time, _} = DateTime.from_iso8601(previous_timestamp)
 
-    Enum.reduce(previous_date_time.minute..(current_date_time.minute - 1), map, fn minute,
-                                                                                   accum ->
-      Map.update(accum, minute, 1, fn current_value -> current_value + 1 end)
+    Enum.reduce(previous_date_time.minute..(current_date_time.minute - 1), map, fn minute, acc ->
+      Map.update(acc, minute, 1, &(&1 + 1))
     end)
   end
 end
@@ -144,8 +134,8 @@ case System.argv() do
                ]) == 240
       end
 
-      test "parse entries" do
-        assert parse_entries([
+      test "parse instructions" do
+        assert parse_instructions([
                  "[1518-11-03 00:05] Guard #10 begins shift",
                  "[1518-11-03 00:24] falls asleep",
                  "[1518-11-03 00:29] wakes up",
@@ -179,8 +169,8 @@ case System.argv() do
                ) == Map.new([{10, 2}, {11, 2}, {12, 2}, {13, 2}, {14, 2}])
       end
 
-      test "update_guard_entries" do
-        assert update_guard_entries([
+      test "process_guard_instructions" do
+        assert process_guard_instructions([
                  {"1518-07-05T23:53:00Z", :begin, 1949},
                  {"1518-07-06T00:10:00Z", :sleep, nil},
                  {"1518-07-06T00:15:00Z", :wake, nil}
