@@ -13,7 +13,7 @@ defmodule AlchemicalReduction do
           |> String.replace(problematic_type, "")
           |> String.replace(problematic_type |> String.upcase(), "")
 
-        check_polymer(0, String.split(polymer, "", trim: true))
+        check_polymer(0, String.to_charlist(polymer))
       end,
       timeout: 60000
     )
@@ -26,7 +26,7 @@ defmodule AlchemicalReduction do
       index + 1 == length(polymer) - 1 ->
         length(polymer)
 
-      check_units(Enum.at(polymer, index), Enum.at(polymer, index + 1)) ->
+      abs(Enum.at(polymer, index) - Enum.at(polymer, index + 1)) == 32 ->
         polymer =
           polymer
           |> List.delete_at(index + 1)
@@ -37,20 +37,6 @@ defmodule AlchemicalReduction do
       true ->
         check_polymer(index + 1, polymer)
     end
-  end
-
-  def check_units(a, b) do
-    a_codepoint =
-      a
-      |> String.to_charlist()
-      |> Enum.at(0)
-
-    b_codepoint =
-      b
-      |> String.to_charlist()
-      |> Enum.at(0)
-
-    abs(b_codepoint - a_codepoint) == 32
   end
 end
 
@@ -65,13 +51,6 @@ case System.argv() do
 
       test "part 1" do
         assert answer("dabAcCaCBAcCcaDA") == 4
-      end
-
-      test "check_units" do
-        assert check_units("a", "a") == false
-        assert check_units("A", "A") == false
-        assert check_units("A", "a") == true
-        assert check_units("a", "A") == true
       end
     end
 
