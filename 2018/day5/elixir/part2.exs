@@ -4,31 +4,27 @@ defmodule AlchemicalReduction do
   def answer(polymer) do
     ?a..?z
     |> Enum.map(&to_string([&1]))
-    |> Enum.reduce(%{}, fn problematic_type, acc ->
-      # IO.puts(problematic_type)
+    |> Task.async_stream(
+      fn problematic_type ->
+        IO.puts(problematic_type)
 
-      Map.put(
-        acc,
-        problematic_type,
-        check_polymer(0, String.split(polymer, "", trim: true), problematic_type)
-      )
-    end)
-    |> Map.values()
+        polymer =
+          polymer
+          |> String.replace(problematic_type, "")
+          |> String.replace(problematic_type |> String.upcase(), "")
+
+        check_polymer(0, String.split(polymer, "", trim: true))
+      end,
+      timeout: 60000
+    )
+    |> Stream.map(fn {:ok, res} -> res end)
     |> Enum.min()
   end
 
-  def check_polymer(index, polymer, problematic_type) do
+  def check_polymer(index, polymer) do
     cond do
-      index + 1 == length(polymer) ->
-        IO.puts("#{Enum.at(polymer, index + 1)}")
+      index + 1 == length(polymer) - 1 ->
         length(polymer)
-
-      check_problematic_type(Enum.at(polymer, index), problematic_type) ->
-        polymer =
-          polymer
-          |> List.delete_at(index)
-
-        check_polymer(index - 1, polymer, problematic_type)
 
       check_units(Enum.at(polymer, index), Enum.at(polymer, index + 1)) ->
         polymer =
@@ -36,15 +32,11 @@ defmodule AlchemicalReduction do
           |> List.delete_at(index + 1)
           |> List.delete_at(index)
 
-        check_polymer(index - 1, polymer, problematic_type)
+        check_polymer(index - 1, polymer)
 
       true ->
-        check_polymer(index + 1, polymer, problematic_type)
+        check_polymer(index + 1, polymer)
     end
-  end
-
-  def check_problematic_type(a, problematic_type) do
-    String.downcase(a) == problematic_type
   end
 
   def check_units(a, b) do
