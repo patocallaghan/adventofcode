@@ -35,7 +35,8 @@ defmodule ChronalCoordinates do
 
     coordinates
     |> generate_distances_on_grid(grid_size)
-    |> count_frequencies
+    |> count_frequencies(grid_size)
+    |> IO.inspect()
     |> find_max_frequency
   end
 
@@ -124,9 +125,9 @@ defmodule ChronalCoordinates do
     {acc_min_x, acc_min_y, acc_max_x, acc_max_y}
   end
 
-  defp count_frequencies(grid_calculations) do
+  defp count_frequencies(grid_calculations, grid_size) do
     Map.to_list(grid_calculations)
-    |> Enum.reduce(%{}, &process_coordinate/2)
+    |> Enum.reduce(%{}, fn current, acc -> process_coordinate(current, acc, grid_size) end)
   end
 
   defp find_max_frequency(frequency_counts) do
@@ -138,11 +139,31 @@ defmodule ChronalCoordinates do
     max_frequency
   end
 
-  defp process_coordinate({_grid_coords, {_count, [coords]}}, map) do
+  defp process_coordinate({_, {_, [{x, _}]}}, map, {min_x, _, _, _})
+       when x == min_x do
+    map
+  end
+
+  defp process_coordinate({_, {_, [{x, _}]}}, map, {_, _, max_x, _})
+       when x == max_x do
+    map
+  end
+
+  defp process_coordinate({_, {_, [{_, y}]}}, map, {_, min_y, _, _})
+       when y == min_y do
+    map
+  end
+
+  defp process_coordinate({_, {_, [{_, y}]}}, map, {_, _, _, max_y})
+       when y == max_y do
+    map
+  end
+
+  defp process_coordinate({_grid_coords, {_count, [coords]}}, map, _grid_size) do
     Map.update(map, coords, 1, &(&1 + 1))
   end
 
-  defp process_coordinate({_grid_coords, {_count, [_head | _tail]}}, map) do
+  defp process_coordinate({_grid_coords, {_count, [_head | _tail]}}, map, _grid_size) do
     map
   end
 
