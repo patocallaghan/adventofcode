@@ -1,32 +1,7 @@
-# https://adventofcode.com/2018/day/5
+# https://adventofcode.com/2018/day/6
 
 defmodule ChronalCoordinates do
   def answer(raw_coordinates) do
-    # Part 1
-    # find min/max coordinates on grid ✅
-
-    # Part 2 ✅
-    # for each coordinate
-    #   for each x/y
-    #     calculate manhattan distance to item
-    #     closest wins
-    #
-    # {
-    #   0,0 => ["1,1", "1,6"]
-    #   0,1 => ["1,1"]
-    # }
-
-    # Part 3
-    # Iterate over borders into list
-    # 0, 0 -> max-x, y
-    # 0, 0 -> 0, max-y
-    # max-x, 0 -> max-x, max-y
-    # 0, max-y -> max-x, max-y
-
-    # Part 4
-    # Iterate over Map to create frequency map
-    #   omit coordinates with more than 1 count
-    #   omit coorderinates that appear in the infinity count list
     coordinates =
       raw_coordinates
       |> Enum.map(&process_raw_coordinate/1)
@@ -35,6 +10,7 @@ defmodule ChronalCoordinates do
 
     coordinates
     |> generate_distances_on_grid(grid_size)
+    |> IO.inspect()
     |> count_frequencies(grid_size)
     |> IO.inspect()
     |> find_max_frequency
