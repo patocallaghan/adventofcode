@@ -18,9 +18,7 @@ defmodule ChronalCoordinates do
 
   def process_raw_coordinate(coordinate) do
     [x, y] = String.split(coordinate, ", ")
-    {int_x, _} = Integer.parse(x)
-    {int_y, _} = Integer.parse(y)
-    {int_x, int_y}
+    {String.to_integer(x), String.to_integer(y)}
   end
 
   def generate_distances_on_grid(coordinates, {min_x, min_y, max_x, max_y}) do
@@ -61,44 +59,9 @@ defmodule ChronalCoordinates do
   end
 
   def find_grid_size(coordinates) do
-    coordinates
-    |> Enum.reduce({}, &find_min_max_coordinates/2)
-  end
-
-  defp find_min_max_coordinates({x, y}, {}) do
-    {x, y, x, y}
-  end
-
-  defp find_min_max_coordinates({x, y}, {min_x, min_y, max_x, max_y}) do
-    acc_min_x =
-      if x < min_x do
-        x
-      else
-        min_x
-      end
-
-    acc_max_x =
-      if x > max_x do
-        x
-      else
-        max_x
-      end
-
-    acc_min_y =
-      if y < min_y do
-        y
-      else
-        min_y
-      end
-
-    acc_max_y =
-      if y > max_y do
-        y
-      else
-        max_y
-      end
-
-    {acc_min_x, acc_min_y, acc_max_x, acc_max_y}
+    {{min_x, _}, {max_x, _}} = Enum.min_max_by(coordinates, fn {x, _} -> x end)
+    {{_, min_y}, {_, max_y}} = Enum.min_max_by(coordinates, fn {_, y} -> y end)
+    {min_x, min_y, max_x, max_y}
   end
 
   defp count_frequencies(grid_calculations, grid_size) do
