@@ -23,16 +23,17 @@ dotted black bags contain no other bags.";
                 .split(" bags contain ")
                 .map(|s| s.to_string())
                 .collect();
-            let color = colors.remove(0).to_string();
+            let color_string = colors.remove(0).to_string();
+            let color_cap = re.captures(&color_string).unwrap();
+            let color = color_cap[0].to_string();
             for c in colors.remove(0).split(", ").collect::<Vec<&str>>() {
-                for cap in re.captures_iter(c) {
-                    let key = cap[0].to_string();
-                    if acc.get_mut(&key).is_none() {
-                        acc.insert(key, vec![color.clone()]);
-                    } else {
-                        acc.get_mut(&key).unwrap().push(color.clone());
-                        acc.insert(key, vec![]);
-                    }
+                let cap = re.captures(c).unwrap();
+                let key = cap[0].to_string();
+                if acc.get_mut(&key).is_none() {
+                    acc.insert(key, vec![color.clone()]);
+                } else {
+                    acc.get_mut(&key).unwrap().push(color.clone());
+                    acc.insert(key, vec![]);
                 }
             }
             acc
