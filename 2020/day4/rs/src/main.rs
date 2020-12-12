@@ -74,7 +74,7 @@ fn validate_byr(year: String) -> bool {
         return false;
     }
     let year_int: u32 = year.parse().expect("Not integer");
-    if year_int >= 1920 && year_int <= 2020 {
+    if year_int >= 1920 && year_int <= 2002 {
         return true;
     }
     return false;
@@ -103,6 +103,10 @@ fn validate_eyr(year: String) -> bool {
 }
 
 fn validate_hgt(height: String) -> bool {
+    if !height.contains("in") && !height.contains("cm") {
+        return false;
+    }
+
     let (min, max) = if height.contains("in") {
         (59, 76)
     } else {
@@ -114,15 +118,15 @@ fn validate_hgt(height: String) -> bool {
         .replace("cm", "")
         .parse()
         .expect("Not a number");
-    if number >= min || number <= max {
+    if number >= min && number <= max {
         return true;
     }
     return false;
 }
 
 fn validate_hcl(hair_color: String) -> bool {
-    let re = Regex::new(r"^#\w{6}$").unwrap();
-    return re.is_match(&hair_color);
+    let re = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
+    re.is_match(&hair_color)
 }
 
 fn validate_ecl(eye_color: String) -> bool {
@@ -133,5 +137,5 @@ fn validate_ecl(eye_color: String) -> bool {
 
 fn validate_pid(passport_id: String) -> bool {
     let re = Regex::new(r"^\d{9}$").unwrap();
-    return re.is_match(&passport_id);
+    re.is_match(&passport_id)
 }
