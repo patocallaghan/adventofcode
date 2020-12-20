@@ -66,6 +66,5 @@ fn bus_two(input: &Vec<&str>) -> i64 {
         cycle = cycle * bus_id;
         println!("cycle: {}", cycle);
     }
-    let (last_index, _) = bus_ids.last().unwrap();
     timestamp
 }
